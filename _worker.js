@@ -1638,8 +1638,8 @@ const html_admin = `<!DOCTYPE html>
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Usage</h3>
                     <div class="relative pt-1">
                         <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-200">
-                            <div :style="`width: ${getPercent(config.CF?.Usage?.workers)}%`" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"></div>
-                            <div :style="`width: ${getPercent(config.CF?.Usage?.pages)}%`" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"></div>
+                            <div :style="\`width: \${getPercent(config.CF?.Usage?.workers)}%\`" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500"></div>
+                            <div :style="\`width: \${getPercent(config.CF?.Usage?.pages)}%\`" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500"></div>
                         </div>
                         <div class="flex justify-between text-xs text-gray-500">
                             <span>Workers: <span x-text="config.CF?.Usage?.workers"></span></span>
@@ -1668,7 +1668,7 @@ const html_admin = `<!DOCTYPE html>
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Links</h3>
                     <div class="space-y-4">
                         <div><label class="block text-sm font-medium">VLESS</label><input type="text" :value="config.LINK" readonly class="mt-1 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm border p-2"></div>
-                        <div><label class="block text-sm font-medium">Clash</label><input type="text" :value="getLink(clash)" readonly class="mt-1 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm border p-2"></div>
+                        <div><label class="block text-sm font-medium">Clash</label><input type="text" :value="getLink(\"clash\")" readonly class="mt-1 block w-full bg-gray-50 border-gray-300 rounded-md shadow-sm border p-2"></div>
                     </div>
                 </div>
             </div>
@@ -1705,7 +1705,7 @@ const html_admin = `<!DOCTYPE html>
                 getLink(type) {
                     if (!this.config.优选订阅生成?.TOKEN) return "";
                     const host = window.location.host;
-                    return `https://${host}/sub?token=${this.config.优选订阅生成.TOKEN}&${type}`;
+                    return \`https://\${host}/sub?token=\${this.config.优选订阅生成.TOKEN}&\${type}\`;
                 }
             }
         }
