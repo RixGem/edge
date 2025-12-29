@@ -2,7 +2,7 @@
 let config_JSON, 反代IP = '', 启用SOCKS5反代 = null, 启用SOCKS5全局反代 = false, 我的SOCKS5账号 = '', parsedSocks5Address = {};
 let 缓存反代IP, 缓存反代解析数组, 缓存反代数组索引 = 0, 启用反代兜底 = true;
 let SOCKS5白名单 = ['*tapecontent.net', '*cloudatacdn.com', '*loadshare.org', '*cdn-centaurus.com', 'scholar.google.com'];
-const Pages静态页面 = 'https://edt-pages.github.io';
+const Pages静态页面 = 'https://edt-pages.github.io'; // 🚨 安全警告: 这是一个外部 GitHub Pages 仓库。如果该仓库被恶意修改，你的管理员密码和配置可能会泄露。建议 Fork https://github.com/cmliu/edt-pages 到你自己的 GitHub，并将 URL 修改为你自己的 Pages 地址。
 ///////////////////////////////////////////////////////主程序入口///////////////////////////////////////////////
 export default {
     async fetch(request, env, ctx) {
@@ -10,7 +10,7 @@ export default {
         const UA = request.headers.get('User-Agent') || 'null';
         const upgradeHeader = request.headers.get('Upgrade');
         const 管理员密码 = env.ADMIN || env.admin || env.PASSWORD || env.password || env.pswd || env.TOKEN || env.KEY || env.UUID || env.uuid;
-        const 加密秘钥 = env.KEY || '勿动此默认密钥，有需求请自行通过添加变量KEY进行修改';
+        const 加密秘钥 = env.KEY || '勿动此默认密钥，有需求请自行通过添加变量KEY进行修改'; // 🚨 安全警告: 请务必在 Cloudflare 后台设置 'KEY' 环境变量，不要依赖此处的默认值。
         const userIDMD5 = await MD5MD5(管理员密码 + 加密秘钥);
         const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
         const envUUID = env.UUID || env.uuid;
@@ -49,7 +49,7 @@ export default {
                         return 响应;
                     }
                 }
-                return fetch(Pages静态页面 + '/login');
+                return new Response(html_admin, { status: 200, headers: { 'Content-Type': 'text/html;charset=utf-8' } });
             } else if (访问路径 === 'admin' || 访问路径.startsWith('admin/')) {//验证cookie后响应管理页面
                 const cookies = request.headers.get('Cookie') || '';
                 const authCookie = cookies.split(';').find(c => c.trim().startsWith('auth='))?.split('=')[1];
@@ -184,7 +184,7 @@ export default {
                 }
 
                 ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Admin_Login', config_JSON));
-                return fetch(Pages静态页面 + '/admin');
+                return new Response(html_admin, { status: 200, headers: { 'Content-Type': 'text/html;charset=utf-8' } });
             } else if (访问路径 === 'logout') {//清除cookie并跳转到登录页面
                 const 响应 = new Response('重定向中...', { status: 302, headers: { 'Location': '/login' } });
                 响应.headers.set('Set-Cookie', 'auth=; Path=/; Max-Age=0; HttpOnly');
@@ -935,6 +935,7 @@ async function 读取config_JSON(env, hostname, userID, path, 重置配置 = fal
             TOKEN: await MD5MD5(hostname + userID),
         },
         订阅转换配置: {
+            // 🚨 隐私警告: 使用在线订阅转换服务会将你的节点信息发送给第三方服务器。建议搭建自己的后端转换服务，或者尽量使用 local: true 模式。
             SUBAPI: "https://SUBAPI.cmliussss.net",
             SUBCONFIG: "https://raw.githubusercontent.com/cmliu/ACL4SSR/refs/heads/main/Clash/config/ACL4SSR_Online_Mini_MultiMode_CF.ini",
             SUBEMOJI: false,
@@ -1579,3 +1580,298 @@ async function html1101(host, 访问IP) {
 </html>`;
 }
 
+
+
+const html_admin = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <style>
+        /* WordPress Login Style Overrides */
+        body.login-page { background-color: #f0f0f1; color: #3c434a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; }
+        .login-card { width: 320px; padding: 24px; background: #fff; border: 1px solid #c3c4c7; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+        .wp-input { border: 1px solid #8c8f94; border-radius: 4px; padding: 0 8px; height: 40px; font-size: 24px; line-height: 1.33333333; width: 100%; margin-bottom: 16px; transition: 0.2s; }
+        .wp-input:focus { border-color: #2271b1; box-shadow: 0 0 0 1px #2271b1; outline: none; }
+        .wp-btn { background: #2271b1; border-color: #2271b1; color: #fff; text-decoration: none; text-shadow: none; display: inline-block; font-size: 13px; line-height: 2.15384615; min-height: 30px; padding: 0 10px; cursor: pointer; border-radius: 3px; font-weight: 600; width: 100%; transition: 0.2s; }
+        .wp-btn:hover { background: #135e96; border-color: #135e96; color: #fff; }
+        .wp-label { font-size: 14px; line-height: 1.5; display: inline-block; margin-bottom: 3px; font-weight: 600; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body x-data="app()" x-init="initApp()" :class="isLoggedIn ? \"bg-gray-100\" : \"login-page flex items-center justify-center h-screen\"">
+
+    <!-- LOGIN VIEW (WordPress Disguise) -->
+    <div x-show="!isLoggedIn" class="login-wrapper" x-transition.opacity>
+        <div class="text-center mb-6">
+            <!-- Generic WordPress-like Logo (Dashicons) -->
+            <svg class="mx-auto h-16 w-16 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-12.707a1 1 0 00-1.414-1.414 3 3 0 00-4.242 4.242 1 1 0 001.414 1.414l-1.06 1.06a5 5 0 017.072-7.072l-1.77 1.77zM10 10a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="login-card">
+            <form @submit.prevent="login">
+                <label class="wp-label">Username or Email Address</label>
+                <!-- Fake field for disguise -->
+                <input type="text" class="wp-input" value="admin" disabled style="background:#f0f0f1; cursor:not-allowed;">
+                
+                <label class="wp-label">Password</label>
+                <input type="password" x-model="password" class="wp-input" required>
+                
+                <div class="flex justify-between items-center mb-4">
+                    <label class="text-xs text-gray-600"><input type="checkbox" checked disabled> Remember Me</label>
+                </div>
+
+                <button type="submit" class="wp-btn" :disabled="loading">
+                    <span x-show="!loading">Log In</span>
+                    <span x-show="loading">Authenticating...</span>
+                </button>
+            </form>
+            <div class="mt-4 text-center">
+                <a href="#" class="text-xs text-gray-500 hover:text-blue-500 decoration-none">Lost your password?</a>
+            </div>
+        </div>
+        <div class="text-center mt-6">
+            <a href="/" class="text-xs text-gray-500 hover:text-gray-800">← Go to Site Home</a>
+        </div>
+    </div>
+
+    <!-- DASHBOARD VIEW -->
+    <div x-show="isLoggedIn" x-cloak class="min-h-screen">
+        <nav class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-xl font-bold text-gray-800">EdgeTunnel Panel</h1>
+                    </div>
+                    <div class="flex items-center">
+                        <button @click="logout" class="text-sm text-red-600 hover:text-red-800 font-medium">Log Out</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            
+            <!-- Usage Stats -->
+            <div class="bg-white overflow-hidden shadow rounded-lg mb-6" x-show="config.CF?.Usage?.success">
+                <div class="px-4 py-5 sm:p-6">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Cloudflare Usage</h3>
+                    <div class="relative pt-1">
+                        <div class="flex mb-2 items-center justify-between">
+                            <div>
+                                <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-200">
+                                    Total Requests
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs font-semibold inline-block text-blue-600">
+                                    <span x-text="config.CF?.Usage?.total || 0"></span> / 100,000
+                                </span>
+                            </div>
+                        </div>
+                        <div class="overflow-hidden h-4 mb-4 text-xs flex rounded bg-gray-200">
+                            <!-- Workers -->
+                            <div :style="`width: ${getPercent(config.CF?.Usage?.workers)}%`" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-green-500" title="Workers"></div>
+                            <!-- Pages -->
+                            <div :style="`width: ${getPercent(config.CF?.Usage?.pages)}%`" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500" title="Pages"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>Workers: <span x-text="config.CF?.Usage?.workers || 0"></span></span>
+                            <span>Pages: <span x-text="config.CF?.Usage?.pages || 0"></span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Config Form -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Core Configuration</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">UUID</label>
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="text" x-model="config.UUID" class="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-md sm:text-sm border-gray-300 p-2 border">
+                                    <button @click="copyToClip(config.UUID)" class="ml-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Copy</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Proxy IP (ProxyIP)</label>
+                                <input type="text" x-model="config.反代.PROXYIP" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 p-2 border" placeholder="auto or IP">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Node Host (Domain)</label>
+                                <input type="text" x-model="config.HOST" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 p-2 border">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Subscription Name</label>
+                                <input type="text" x-model="config.优选订阅生成.SUBNAME" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 p-2 border">
+                            </div>
+
+                            <!-- Conversion Config (Hidden/Advanced) -->
+                            <div class="pt-4 border-t border-gray-200">
+                                <h4 class="text-sm font-medium text-gray-900">Subscription Conversion (Optional)</h4>
+                                <div class="mt-2">
+                                    <label class="block text-xs text-gray-500">Backend URL</label>
+                                    <input type="text" x-model="config.订阅转换配置.SUBAPI" class="mt-1 block w-full shadow-sm sm:text-xs border-gray-300 p-2 border rounded">
+                                </div>
+                                <div class="mt-2">
+                                    <label class="block text-xs text-gray-500">Config URL</label>
+                                    <input type="text" x-model="config.订阅转换配置.SUBCONFIG" class="mt-1 block w-full shadow-sm sm:text-xs border-gray-300 p-2 border rounded">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5">
+                            <button @click="saveConfig" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none">
+                                Save Configuration
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Links Section -->
+                <div class="bg-white shadow rounded-lg">
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Subscription & Links</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">VLESS Link</label>
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="text" :value="config.LINK" readonly class="bg-gray-50 flex-1 block w-full rounded-md sm:text-sm border-gray-300 p-2 border">
+                                    <button @click="copyToClip(config.LINK)" class="ml-2 px-3 border border-gray-300 rounded-md text-sm hover:bg-gray-50">Copy</button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Clash Subscription</label>
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="text" :value="getLink(\"clash\")" readonly class="bg-gray-50 flex-1 block w-full rounded-md sm:text-sm border-gray-300 p-2 border">
+                                    <button @click="copyToClip(getLink(\"clash\"))" class="ml-2 px-3 border border-gray-300 rounded-md text-sm hover:bg-gray-50">Copy</button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">SingBox Subscription</label>
+                                <div class="mt-1 flex rounded-md shadow-sm">
+                                    <input type="text" :value="getLink(\"sb\")" readonly class="bg-gray-50 flex-1 block w-full rounded-md sm:text-sm border-gray-300 p-2 border">
+                                    <button @click="copyToClip(getLink(\"sb\"))" class="ml-2 px-3 border border-gray-300 rounded-md text-sm hover:bg-gray-50">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function app() {
+            return {
+                isLoggedIn: false,
+                loading: false,
+                password: "",
+                config: { 
+                    反代: {}, 
+                    CF: { Usage: {} },
+                    优选订阅生成: {},
+                    订阅转换配置: {}
+                },
+
+                initApp() {
+                    // Check if already logged in by trying to fetch config
+                    this.checkSession();
+                },
+
+                async checkSession() {
+                    try {
+                        const res = await fetch("/admin/config.json");
+                        if (res.ok) {
+                            this.config = await res.json();
+                            this.isLoggedIn = true;
+                        } else {
+                            // 401 or redirect -> Not logged in
+                            this.isLoggedIn = false;
+                        }
+                    } catch (e) {
+                        this.isLoggedIn = false;
+                    }
+                },
+
+                async login() {
+                    this.loading = true;
+                    try {
+                        const formData = new URLSearchParams();
+                        formData.append("password", this.password);
+                        
+                        const res = await fetch("/login", {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        if (res.ok) {
+                            // Login success, load data
+                            await this.checkSession();
+                        } else {
+                            alert("Invalid Password");
+                        }
+                    } catch (e) {
+                        alert("Login Error: " + e.message);
+                    } finally {
+                        this.loading = false;
+                        this.password = "";
+                    }
+                },
+
+                async logout() {
+                    await fetch("/logout");
+                    this.isLoggedIn = false;
+                    this.config = { 反代: {}, CF: {}, 优选订阅生成: {}, 订阅转换配置: {} };
+                },
+
+                async saveConfig() {
+                    if (!confirm("Save changes?")) return;
+                    try {
+                        const res = await fetch("/admin/config.json", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(this.config)
+                        });
+                        if (res.ok) {
+                            alert("Configuration Saved!");
+                        } else {
+                            alert("Save Failed");
+                        }
+                    } catch (e) {
+                        alert("Error: " + e.message);
+                    }
+                },
+
+                getPercent(val) {
+                    if (!val) return 0;
+                    return Math.min((val / 100000) * 100, 100).toFixed(1);
+                },
+
+                getLink(type) {
+                    if (!this.config.优选订阅生成?.TOKEN) return "";
+                    const host = window.location.host;
+                    return `https://${host}/sub?token=${this.config.优选订阅生成.TOKEN}&${type}`;
+                },
+
+                copyToClip(text) {
+                    if (!text) return;
+                    navigator.clipboard.writeText(text).then(() => alert("Copied!"));
+                }
+            }
+        }
+    </script>
+</body>
+</html>`;
